@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
-
+const methodOverride = require('method-override');
 const Campground = require('./models/campground');
 
 mongoose.connect('mongodb://localhost:27017/yelp-camp', {
@@ -23,6 +23,8 @@ app.set('views', path.join(__dirname, 'views')); // set a relative path to /view
 
 // tell express to prase requests body
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method')); // to Override query methods in forms (to send other request than POST or GET from HTML forms)
+
 
 app.listen(3000, ()=> {
     console.log('serving on port 3000')
@@ -54,4 +56,19 @@ app.post('/campgrounds', async (req, res) => {
 app.get('/campgrounds/:id', async(req, res) => {
     const campground = await Campground.findById(req.params.id) // find the camp by id passed in the parameters of the request
     res.render('campgrounds/show', { campground });
+});
+// campground EDIT route
+app.get('/campgrounds/:id/edit', async(req, res) => {
+    const campground = await Campground.findById(req.params.id) // find the camp by id passed in the parameters of the request
+    res.render('campgrounds/edit', { campground });
+});
+// route handliugn the from request to edit the camp
+app.put('/campgrounds/:id', async(req,res) => {
+    const { id } = req.params; // id is sent in the request parameters
+    // req body holds contents of the form
+    // use spread operator (...) to spread the campground object
+    // into the db model object
+    const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground })
+    // redirect to the just edited object
+    res.redirect(`/campgrounds/${campground._id}`)
 });
