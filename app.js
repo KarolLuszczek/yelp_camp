@@ -29,6 +29,20 @@ app.get('/', (req, res) => {
     res.render('home') // with relative path it goes to views/home.ejs
 });
 
+// Basic routes for the app
+// campground/index
+app.get('/campgrounds', async (req, res) => {
+    const campgrounds = await Campground.find({}) // find all camps in the db
+    res.render('campgrounds/index', { campgrounds })
+});
+// campground show route
+app.get('/campgrounds/:id', async(req, res) => {
+    const campground = await Campground.findById(req.params.id) // find the camp by id passed in the parameters of the request
+    res.render('campgrounds/show', { campground });
+});
+
+
+
 app.get('/makecampground', async (req, res) => {
     const camp = new Campground({
         title: 'My Backyard',
