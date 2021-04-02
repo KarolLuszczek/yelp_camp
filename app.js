@@ -72,3 +72,10 @@ app.put('/campgrounds/:id', async(req,res) => {
     // redirect to the just edited object
     res.redirect(`/campgrounds/${campground._id}`)
 });
+
+// camp DELETE route
+app.delete('/campgrounds/:id/', async(req, res) =>{
+    const { id } = req.params;
+    await Campground.findByIdAndDelete(id);
+    res.redirect('/campgrounds');
+});
