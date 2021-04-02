@@ -21,6 +21,9 @@ const app = express();
 app.set('view engine', 'ejs'); // Using ejs templates
 app.set('views', path.join(__dirname, 'views')); // set a relative path to /views
 
+// tell express to prase requests body
+app.use(express.urlencoded({ extended: true }));
+
 app.listen(3000, ()=> {
     console.log('serving on port 3000')
 });
@@ -35,20 +38,20 @@ app.get('/campgrounds', async (req, res) => {
     const campgrounds = await Campground.find({}) // find all camps in the db
     res.render('campgrounds/index', { campgrounds })
 });
-// campground show route
+// campground CREATE route\
+// this route must be declared before /campgroudns/:id
+// otherwise new will be treated as :id 
+app.get('/campgrounds/new', (req, res) => {
+    res.render('campgrounds/new')
+});
+// post route to save a new campground
+app.post('/campgrounds', async (req, res) => {
+    const campground = new Campground(req.body.campground); // create a new db entry from the form post request
+    await campground.save();
+    res.redirect(`/campgrounds/${campground._id}`);
+});
+// campground SHOW route
 app.get('/campgrounds/:id', async(req, res) => {
     const campground = await Campground.findById(req.params.id) // find the camp by id passed in the parameters of the request
     res.render('campgrounds/show', { campground });
-});
-
-
-
-app.get('/makecampground', async (req, res) => {
-    const camp = new Campground({
-        title: 'My Backyard',
-        description: 'Cheap camping location'
-    });
-    console.log(camp)
-    await camp.save(); // async function awaits the new entry saved to the db
-    res.send(camp);
 });
