@@ -1,6 +1,6 @@
 # yelp_camp
 BootCamp project. Using express, mongoDB, ejs.
-
+App is using RESTful routes.
 
 To create a new npm package.json for npm:
 `npm init -y`
