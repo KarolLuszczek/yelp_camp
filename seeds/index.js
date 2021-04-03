@@ -23,10 +23,14 @@ const seedDB = async() => {
     // Seed the database with 50 random camps and locations
     for(let i=0; i<50; i++){
         const random1000 =Math.floor(Math.random() * 1000); // JS trick forr generating random ints
+        const price = Math.floor(Math.random()* 30) + 10;
         // Create a new random campground
         const camp = new Campground({
                 location: `${cities[random1000].city}, ${cities[random1000].state}`, // Using `` invokes template literal that contain placeholders ${expression}
-                title: `${sample(descriptors)} ${sample(places)}`
+                title: `${sample(descriptors)} ${sample(places)}`,
+                image: 'https://source.unsplash.com/collection/483251',
+                price: price,
+                description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vulputate lacinia mauris. Nullam a aliquam tortor.'
             })
         await camp.save()
     }

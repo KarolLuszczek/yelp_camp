@@ -4,9 +4,10 @@ const Schema = mongoose.Schema; // a little shortcut for schema object
 
 const CampgroundSchema = new Schema({
     title: String,
-    price: String,
+    price: Number,
     description: String,
-    location: String
+    location: String,
+    image: String
 });
 
 // make the model importable by the main application
