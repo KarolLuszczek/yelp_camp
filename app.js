@@ -2,6 +2,9 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
+const Joi = require('joi');
+const catchAsync = require('./utils/catchAsync');
+const ExpressError = require('./utils/ExpressError')
 const methodOverride = require('method-override');
 const Campground = require('./models/campground');
 
@@ -38,10 +41,10 @@ app.get('/', (req, res) => {
 
 // Basic routes for the app
 // campground/index
-app.get('/campgrounds', async (req, res) => {
+app.get('/campgrounds', catchAsync(async (req, res) => {
     const campgrounds = await Campground.find({}) // find all camps in the db
     res.render('campgrounds/index', { campgrounds })
-});
+}));
 // campground CREATE route\
 // this route must be declared before /campgroudns/:id
 // otherwise new will be treated as :id 
@@ -49,23 +52,37 @@ app.get('/campgrounds/new', (req, res) => {
     res.render('campgrounds/new')
 });
 // post route to save a new campground
-app.post('/campgrounds', async (req, res) => {
+app.post('/campgrounds', catchAsync(async (req, res, next) => {
+    const campgroundSchema = Joi.object({
+        campground: Joi.object({
+            title: Joi.string().required(),
+            price: Joi.number().required().min(0),
+            image: Joi.string().required(),
+            location: Joi.string().required(),
+            description: Joi.string().required()
+        }).required()
+    });
+    const { error } = campgroundSchema.validate(req.body) // destruct an error portion only from the validation
+    if(error){
+        const msg = error.details.map(el => el.message).join(',') //for each element in the error array, join it into one string on a comma
+        throw new ExpressError(msg, 400)
+    }
     const campground = new Campground(req.body.campground); // create a new db entry from the form post request
     await campground.save();
     res.redirect(`/campgrounds/${campground._id}`);
-});
+}));
 // campground SHOW route
-app.get('/campgrounds/:id', async(req, res) => {
+app.get('/campgrounds/:id', catchAsync(async(req, res) => {
     const campground = await Campground.findById(req.params.id) // find the camp by id passed in the parameters of the request
     res.render('campgrounds/show', { campground });
-});
+}));
 // campground EDIT route
-app.get('/campgrounds/:id/edit', async(req, res) => {
+app.get('/campgrounds/:id/edit', catchAsync(async(req, res) => {
     const campground = await Campground.findById(req.params.id) // find the camp by id passed in the parameters of the request
     res.render('campgrounds/edit', { campground });
-});
+}));
 // route handliugn the from request to edit the camp
-app.put('/campgrounds/:id', async(req,res) => {
+app.put('/campgrounds/:id', catchAsync(async(req,res) => {
     const { id } = req.params; // id is sent in the request parameters
     // req body holds contents of the form
     // use spread operator (...) to spread the campground object
@@ -73,11 +90,23 @@ app.put('/campgrounds/:id', async(req,res) => {
     const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground })
     // redirect to the just edited object
     res.redirect(`/campgrounds/${campground._id}`)
-});
+}));
 
 // camp DELETE route
-app.delete('/campgrounds/:id/', async(req, res) =>{
+app.delete('/campgrounds/:id/', catchAsync(async(req, res) =>{
     const { id } = req.params;
     await Campground.findByIdAndDelete(id);
     res.redirect('/campgrounds');
+}));
+
+// for all paths unresolved up to this point
+app.all('*', (req, res, next) =>{
+    next(new ExpressError(("Page Not Found"), 404))
+});
+
+app.use((err, req, res, next) => {
+    //const { statusCode = 500, message = "Something went wrong!" } = err; //destructing statusCode and message from error. Defualts assigned if these attributes are not matched.
+    if(!err.message) err.message = "Oh no! Something went wrong!"
+    if(!err.statusCode) err.statusCode = 500
+    res.status(err.statusCode).render('error', { err }); //sends a response with a statusCode and a message
 });
