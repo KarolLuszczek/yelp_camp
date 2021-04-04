@@ -3,6 +3,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
 const Joi = require('joi');
+const { campgroundSchema } = require('./schemas.js')
 const catchAsync = require('./utils/catchAsync');
 const ExpressError = require('./utils/ExpressError')
 const methodOverride = require('method-override');
@@ -30,6 +31,16 @@ app.set('views', path.join(__dirname, 'views')); // set a relative path to /view
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method')); // to Override query methods in forms (to send other request than POST or GET from HTML forms)
 
+// middleware function to validate forms with Joi
+const validateCampground = (req, res, next) => {
+    const { error } = campgroundSchema.validate(req.body) // destruct an error portion only from the validation
+    if(error){
+        const msg = error.details.map(el => el.message).join(',') //for each element in the error array, join it into one string on a comma
+        throw new ExpressError(msg, 400)
+    } else {
+        next();
+    }
+};
 
 app.listen(3000, ()=> {
     console.log('serving on port 3000')
@@ -52,21 +63,7 @@ app.get('/campgrounds/new', (req, res) => {
     res.render('campgrounds/new')
 });
 // post route to save a new campground
-app.post('/campgrounds', catchAsync(async (req, res, next) => {
-    const campgroundSchema = Joi.object({
-        campground: Joi.object({
-            title: Joi.string().required(),
-            price: Joi.number().required().min(0),
-            image: Joi.string().required(),
-            location: Joi.string().required(),
-            description: Joi.string().required()
-        }).required()
-    });
-    const { error } = campgroundSchema.validate(req.body) // destruct an error portion only from the validation
-    if(error){
-        const msg = error.details.map(el => el.message).join(',') //for each element in the error array, join it into one string on a comma
-        throw new ExpressError(msg, 400)
-    }
+app.post('/campgrounds', validateCampground, catchAsync(async (req, res, next) => {
     const campground = new Campground(req.body.campground); // create a new db entry from the form post request
     await campground.save();
     res.redirect(`/campgrounds/${campground._id}`);
@@ -82,7 +79,8 @@ app.get('/campgrounds/:id/edit', catchAsync(async(req, res) => {
     res.render('campgrounds/edit', { campground });
 }));
 // route handliugn the from request to edit the camp
-app.put('/campgrounds/:id', catchAsync(async(req,res) => {
+// middleware is passed before the main function on the path
+app.put('/campgrounds/:id', validateCampground, catchAsync(async(req,res) => {
     const { id } = req.params; // id is sent in the request parameters
     // req body holds contents of the form
     // use spread operator (...) to spread the campground object
