@@ -7,7 +7,13 @@ const CampgroundSchema = new Schema({
     price: Number,
     description: String,
     location: String,
-    image: String
+    image: String,
+    reviews: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Review'
+        }
+    ]
 });
 
 // make the model importable by the main application
