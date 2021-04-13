@@ -3,7 +3,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
 const Joi = require('joi');
-const { campgroundSchema } = require('./schemas.js')
+const { campgroundSchema, reviewSchema } = require('./schemas.js')
 const catchAsync = require('./utils/catchAsync');
 const ExpressError = require('./utils/ExpressError')
 const methodOverride = require('method-override');
@@ -41,6 +41,17 @@ const validateCampground = (req, res, next) => {
     } else {
         next();
     }
+};
+
+//middleware function to validate review form
+const validateReview = (req, res, next) => {
+    const {error} = reviewSchema.validate(req.body);
+    if(error){
+        const msg = error.details.map(el => el.message).join(',') //for each element in the error array, join it into one string on a comma
+        throw new ExpressError(msg, 400)
+    } else {
+        next();
+    }     
 };
 
 app.listen(3000, ()=> {
@@ -98,7 +109,8 @@ app.delete('/campgrounds/:id/', catchAsync(async(req, res) =>{
     res.redirect('/campgrounds');
 }));
 
-app.post('/campgrounds/:id/reviews', catchAsync(async(req, res) =>{
+// middleware valdiateReview before the reivew is added to the database
+app.post('/campgrounds/:id/reviews', validateReivew, catchAsync(async(req, res) =>{
     const campground = await Campground.findById(req.params.id);
     const review = new Review(req.body.review);
     campground.reviews.push(review);
