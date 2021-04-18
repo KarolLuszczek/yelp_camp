@@ -82,12 +82,13 @@ app.post('/campgrounds', validateCampground, catchAsync(async (req, res, next) =
 }));
 // campground SHOW route
 app.get('/campgrounds/:id', catchAsync(async(req, res) => {
-    const campground = await Campground.findById(req.params.id) // find the camp by id passed in the parameters of the request
+    const campground = await (await Campground.findById(req.params.id).populate('reviews'))
+    // populate is used to populate reviews in campground with actual data
     res.render('campgrounds/show', { campground });
 }));
 // campground EDIT route
 app.get('/campgrounds/:id/edit', catchAsync(async(req, res) => {
-    const campground = await Campground.findById(req.params.id) // find the camp by id passed in the parameters of the request
+    const campground = await Campground.findById(req.params.id) // find the camp by id passed in the parameters of the request   
     res.render('campgrounds/edit', { campground });
 }));
 // route handliugn the from request to edit the camp
@@ -110,7 +111,7 @@ app.delete('/campgrounds/:id/', catchAsync(async(req, res) =>{
 }));
 
 // middleware valdiateReview before the reivew is added to the database
-app.post('/campgrounds/:id/reviews', validateReivew, catchAsync(async(req, res) =>{
+app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async(req, res) =>{
     const campground = await Campground.findById(req.params.id);
     const review = new Review(req.body.review);
     campground.reviews.push(review);
