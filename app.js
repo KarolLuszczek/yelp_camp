@@ -118,7 +118,15 @@ app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async(req, res) 
     await review.save();
     await campground.save(); // should be done in parallel (awaiting)
     res.redirect(`/campgrounds/${campground._id}`);
-}))
+}));
+
+app.delete('/campgrounds/:id/reviews/:reviewId', catchAsync(async (req, res) =>{
+    const {id, reviewId } = req.params; // destructuring request parameters
+    Campground.findByIdAndUpdate(id, {$pull: { reviews: reviewId}}) // $pull operator removes all instances that match reviewId from an array reviews
+    await Review.findByIdAndDelete(reviewId);
+    res.redirect(`/campgrounds/${id}`)
+}));
+
 // for all paths unresolved up to this point
 app.all('*', (req, res, next) =>{
     next(new ExpressError(("Page Not Found"), 404))
