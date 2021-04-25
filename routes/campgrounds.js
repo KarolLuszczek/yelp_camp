@@ -33,12 +33,18 @@ router.get('/new', (req, res) => {
 router.post('/', validateCampground, catchAsync(async (req, res, next) => {
     const campground = new Campground(req.body.campground); // create a new db entry from the form post request
     await campground.save();
-    res.redirect(`/campgrounds/${campground._id}`);
+    req.flash('success', 'Successfully added a new campground!');
+    res.redirect(`/campgrounds/${campground._id} `);
 }));
 // campground SHOW route
 router.get('/:id', catchAsync(async(req, res) => {
     const campground = await (await Campground.findById(req.params.id).populate('reviews'))
     // populate is used to populate reviews in campground with actual data
+    // if campground not found flash error and redirect
+    if(!campground){
+        req.flash("error", "Cannot find that campground.");
+        res.redirect('/campgrounds');
+    }
     res.render('campgrounds/show', { campground });
 }));
 // campground EDIT route
@@ -46,7 +52,7 @@ router.get('/:id/edit', catchAsync(async(req, res) => {
     const campground = await Campground.findById(req.params.id) // find the camp by id passed in the parameters of the request   
     res.render('campgrounds/edit', { campground });
 }));
-// route handliugn the from request to edit the camp
+// route handling the from request to edit the camp
 // middleware is passed before the main function on the path
 router.put('/:id', validateCampground, catchAsync(async(req,res) => {
     const { id } = req.params; // id is sent in the request parameters
@@ -54,6 +60,7 @@ router.put('/:id', validateCampground, catchAsync(async(req,res) => {
     // use spread operator (...) to spread the campground object
     // into the db model object
     const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground })
+    req.flash("success", "Successfully updated campground!")
     // redirect to the just edited object
     res.redirect(`/campgrounds/${campground._id}`)
 }));
@@ -62,6 +69,7 @@ router.put('/:id', validateCampground, catchAsync(async(req,res) => {
 router.delete('/:id', catchAsync(async(req, res) =>{
     const { id } = req.params;
     await Campground.findByIdAndDelete(id);
+    req.flash("success", "Campground deleted")
     res.redirect('/campgrounds');
 }));
 

@@ -2,7 +2,9 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
+const session = require('express-session');
 const Joi = require('joi');
+const flash = require('connect-flash');
 const ExpressError = require('./utils/ExpressError');
 const methodOverride = require('method-override');
 
@@ -12,7 +14,8 @@ const reviews = require('./routes/reviews');
 mongoose.connect('mongodb://localhost:27017/yelp-camp', {
     useNewUrlParser: true,
     useCreateIndex: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useFindAndModify: false
 }) // hardcoded for early development
 
 const db = mongoose.connection;
@@ -31,9 +34,33 @@ app.set('views', path.join(__dirname, 'views')); // set a relative path to /view
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method')); // to Override query methods in forms (to send other request than POST or GET from HTML forms)
 
+// Tell express to serve public directory
+app.use(express.static(path.join(__dirname, 'public')));
+// Configure session
+const sessionConfig = {
+    secret: 'thisisasecretlol!',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        httpOnly: true, // will not reveal cookie in case of cross-site script attack
+        expires: Date.now() + 1000*60*60*24*7, // expires in a week (in milliseconds)
+        maxAge: 1000*60*60*24*7
+    }
+}
+app.use(session(sessionConfig));
+app.use(flash());
+
+// middleware to run before any route
+app.use((req, res, next) => {
+    res.locals.success = req.flash('success'); // locals is available in all the templates
+    res.locals.error = req.flash('error');
+    next();
+})
+
+
 // Specify routers
-app.use('/campgrounds', campgrounds) // first arugment defines the prefix for all routes in campgrounds router
-app.use('/campgrounds/:id/reviews', reviews)
+app.use('/campgrounds', campgrounds); // first arugment defines the prefix for all routes in campgrounds router
+app.use('/campgrounds/:id/reviews', reviews);
 
 app.get('/', (req, res) => {
     res.render('home') // with relative path it goes to views/home.ejs
