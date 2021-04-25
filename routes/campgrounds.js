@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router(); // router for adding routes
+const Campground = require('../models/campground');
+const { campgroundSchema } = require('../schemas.js');
+
 const catchAsync = require('../utils/catchAsync');
 const ExpressError = require('../utils/ExpressError');
-const Campground = require('../models/campground');
-const { campgroundSchema } = require('../schemas.js')
 
 // middleware function to validate forms with Joi
 const validateCampground = (req, res, next) => {
