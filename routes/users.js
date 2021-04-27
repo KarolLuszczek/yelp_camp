@@ -5,6 +5,7 @@
 // /login - POST: logs in a user
 const express = require('express');
 const router = express.Router();
+const passport = require('passport')
 const catchAsync = require('../utils/catchAsync');
 const User = require('../models/user');
 
@@ -26,12 +27,20 @@ router.post('/register', catchAsync(async(req, res) => {
     }
 }));
 
-router.ger('/login', (req, res) => {
+router.get('/login', (req, res) => {
     res.render('users/login')
 });
 
-router.post('/login', (req, res)=> {
+// Uses passport.authenticate middlewate with local strategy
+router.post('/login', passport.authenticate('local', {failureFlash: true, failureRedirect:'/login'}), (req, res)=> {
+    req.flash('success', 'Welcome back!');
+    res.redirect('/campgrounds');
+});
 
+router.get('/logout', (req, res)=>{
+    req.logout();
+    req.flash('success', "Goodbye!")
+    res.redirect('/campgrounds');
 });
 
 module.exports = router;

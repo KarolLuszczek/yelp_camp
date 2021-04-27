@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router(); // router for adding routes
 const Campground = require('../models/campground');
 const { campgroundSchema } = require('../schemas.js');
-
+const { isLoggedIn } = require('../middleware');
 const catchAsync = require('../utils/catchAsync');
 const ExpressError = require('../utils/ExpressError');
 
@@ -26,11 +26,11 @@ router.get('/', catchAsync(async (req, res) => {
 // campground CREATE route\
 // this route must be declared before /campgroudns/:id
 // otherwise new will be treated as :id 
-router.get('/new', (req, res) => {
+router.get('/new', isLoggedIn, (req, res) => {
     res.render('campgrounds/new')
 });
 // post route to save a new campground
-router.post('/', validateCampground, catchAsync(async (req, res, next) => {
+router.post('/', isLoggedIn, validateCampground, catchAsync(async (req, res, next) => {
     const campground = new Campground(req.body.campground); // create a new db entry from the form post request
     await campground.save();
     req.flash('success', 'Successfully added a new campground!');
