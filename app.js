@@ -7,9 +7,13 @@ const Joi = require('joi');
 const flash = require('connect-flash');
 const ExpressError = require('./utils/ExpressError');
 const methodOverride = require('method-override');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const User = require('./models/user')
 
-const campgrounds = require('./routes/campgrounds');
-const reviews = require('./routes/reviews');
+const userRoutes = require('./routes/users');
+const campgroundRoutes = require('./routes/campgrounds');
+const reviewRoutes = require('./routes/reviews');
 
 mongoose.connect('mongodb://localhost:27017/yelp-camp', {
     useNewUrlParser: true,
@@ -50,6 +54,13 @@ const sessionConfig = {
 app.use(session(sessionConfig));
 app.use(flash());
 
+app.use(passport.initialize());
+app.use(passport.session()) // to enable persisiten logging sessions, session must be used before this
+passport.use(new LocalStrategy(User.authenticate())) // autenticate() function form the passport-local-mongoose plugin
+passport.serializeUser(User.serializeUser()) // defines how the user is stored in the session. Also comes from the plugin into the model.
+passport.deserializeUser(User.deserializeUser()) // defines how the user is deseiralized from the session Also comes from the plugin into the model.
+
+
 // middleware to run before any route
 app.use((req, res, next) => {
     res.locals.success = req.flash('success'); // locals is available in all the templates
@@ -59,8 +70,9 @@ app.use((req, res, next) => {
 
 
 // Specify routers
-app.use('/campgrounds', campgrounds); // first arugment defines the prefix for all routes in campgrounds router
-app.use('/campgrounds/:id/reviews', reviews);
+app.use('/', userRoutes);
+app.use('/campgrounds', campgroundRoutes); // first arugment defines the prefix for all routes in campgrounds router
+app.use('/campgrounds/:id/reviews', reviewRoutes);
 
 app.get('/', (req, res) => {
     res.render('home') // with relative path it goes to views/home.ejs
