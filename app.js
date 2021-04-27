@@ -63,6 +63,7 @@ passport.deserializeUser(User.deserializeUser()) // defines how the user is dese
 
 // middleware to run before any route
 app.use((req, res, next) => {
+    res.locals.currentUser = req.user; // add current user (via passport) to locals (for showing navbar elements)
     res.locals.success = req.flash('success'); // locals is available in all the templates
     res.locals.error = req.flash('error');
     next();
