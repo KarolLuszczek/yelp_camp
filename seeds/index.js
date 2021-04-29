@@ -26,6 +26,7 @@ const seedDB = async() => {
         const price = Math.floor(Math.random()* 30) + 10;
         // Create a new random campground
         const camp = new Campground({
+                author: '60885ad52758a32f8ced05b8',
                 location: `${cities[random1000].city}, ${cities[random1000].state}`, // Using `` invokes template literal that contain placeholders ${expression}
                 title: `${sample(descriptors)} ${sample(places)}`,
                 image: 'https://source.unsplash.com/collection/483251',

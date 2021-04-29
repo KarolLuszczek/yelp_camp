@@ -32,13 +32,15 @@ router.get('/new', isLoggedIn, (req, res) => {
 // post route to save a new campground
 router.post('/', isLoggedIn, validateCampground, catchAsync(async (req, res, next) => {
     const campground = new Campground(req.body.campground); // create a new db entry from the form post request
+    campground.author = req.user._id;
+    console.log(req.user._id)
     await campground.save();
     req.flash('success', 'Successfully added a new campground!');
-    res.redirect(`/campgrounds/${campground._id} `);
+    res.redirect(`/campgrounds/${campground._id}`);
 }));
 // campground SHOW route
 router.get('/:id', catchAsync(async(req, res) => {
-    const campground = await (await Campground.findById(req.params.id).populate('reviews'))
+    const campground = await (await Campground.findById(req.params.id).populate('reviews').populate('author'))
     // populate is used to populate reviews in campground with actual data
     // if campground not found flash error and redirect
     if(!campground){
@@ -48,7 +50,7 @@ router.get('/:id', catchAsync(async(req, res) => {
     res.render('campgrounds/show', { campground });
 }));
 // campground EDIT route
-router.get('/:id/edit', catchAsync(async(req, res) => {
+router.get('/:id/edit', isLoggedIn, catchAsync(async(req, res) => {
     const campground = await Campground.findById(req.params.id) // find the camp by id passed in the parameters of the request   
     res.render('campgrounds/edit', { campground });
 }));
@@ -59,7 +61,13 @@ router.put('/:id', validateCampground, catchAsync(async(req,res) => {
     // req body holds contents of the form
     // use spread operator (...) to spread the campground object
     // into the db model object
-    const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground })
+    const campground = await Campground.findById(id);
+    // check if the user is authorized to edit the campground
+    if (!campground.author.equals(req.user._id)) {
+        req.flash("error", "you do not have permission to do that!")
+        res.redirect(`/campgrounds/${campground._id}`)
+    };
+     const camp = await Campground.findByIdAndUpdate(id, { ...req.body.campground }) // three dots will returns a list of campground fields
     req.flash("success", "Successfully updated campground!")
     // redirect to the just edited object
     res.redirect(`/campgrounds/${campground._id}`)
