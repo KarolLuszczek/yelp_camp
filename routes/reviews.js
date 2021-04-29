@@ -3,26 +3,11 @@ const express = require('express');
 // Use mergeParams to access all params on the route
 // we need it to get :id from the route (defined in app.js)
 const router = express.Router({mergeParams: true}); // router for adding routes
-
 const Campground = require('../models/campground');
 const Review = require('../models/review');
-const { reviewSchema } = require('../schemas.js')
-const { isLoggedIn } = require('../middleware');
-
+const { isLoggedIn, validateReview } = require('../middleware');
 const catchAsync = require('../utils/catchAsync');
-const ExpressError = require('../utils/ExpressError');
  
-//middleware function to validate review form
-const validateReview = (req, res, next) => {
-    const {error} = reviewSchema.validate(req.body);
-    if(error){
-        const msg = error.details.map(el => el.message).join(',') //for each element in the error array, join it into one string on a comma
-        throw new ExpressError(msg, 400)
-    } else {
-        next();
-    }     
-};
-
 // middleware valdiateReview before the reivew is added to the database
 router.post('/', isLoggedIn, validateReview, catchAsync(async(req, res) =>{
     const campground = await Campground.findById(req.params.id);

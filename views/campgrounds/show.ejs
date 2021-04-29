@@ -18,7 +18,7 @@
             of the campground only 
             campground.author
             currentUser._id
-            -->
+            -->  
             <% if( currentUser && campground.author.equals(currentUser._id)) { %>
             <div class="card-body">
                 <a class="card-link btn btn-info" href="/campgrounds/<%=campground._id%>/edit">Edit</a>

@@ -1,21 +1,8 @@
 const express = require('express');
 const router = express.Router(); // router for adding routes
 const Campground = require('../models/campground');
-const { campgroundSchema } = require('../schemas.js');
-const { isLoggedIn } = require('../middleware');
+const { isLoggedIn, isAuthor, validateCampground } = require('../middleware');
 const catchAsync = require('../utils/catchAsync');
-const ExpressError = require('../utils/ExpressError');
-
-// middleware function to validate forms with Joi
-const validateCampground = (req, res, next) => {
-    const { error } = campgroundSchema.validate(req.body) // destruct an error portion only from the validation
-    if(error){
-        const msg = error.details.map(el => el.message).join(',') //for each element in the error array, join it into one string on a comma
-        throw new ExpressError(msg, 400)
-    } else {
-        next();
-    }
-};
 
 // Basic routes for the router
 // campground/index
@@ -50,31 +37,30 @@ router.get('/:id', catchAsync(async(req, res) => {
     res.render('campgrounds/show', { campground });
 }));
 // campground EDIT route
-router.get('/:id/edit', isLoggedIn, catchAsync(async(req, res) => {
-    const campground = await Campground.findById(req.params.id) // find the camp by id passed in the parameters of the request   
+router.get('/:id/edit', isLoggedIn, isAuthor, catchAsync(async(req, res) => {
+    const { id } = req.params;
+    const campground = await Campground.findById(id) // find the camp by id passed in the parameters of the request   
+    if (!campground){
+        req.flash("error", "Cannot find this campground!");
+        return res.redirect('/campgrounds');
+    }
     res.render('campgrounds/edit', { campground });
 }));
 // route handling the from request to edit the camp
 // middleware is passed before the main function on the path
-router.put('/:id', validateCampground, catchAsync(async(req,res) => {
+router.put('/:id', isLoggedIn, isAuthor, validateCampground, catchAsync(async(req,res) => {
     const { id } = req.params; // id is sent in the request parameters
     // req body holds contents of the form
     // use spread operator (...) to spread the campground object
     // into the db model object
-    const campground = await Campground.findById(id);
-    // check if the user is authorized to edit the campground
-    if (!campground.author.equals(req.user._id)) {
-        req.flash("error", "you do not have permission to do that!")
-        res.redirect(`/campgrounds/${campground._id}`)
-    };
-     const camp = await Campground.findByIdAndUpdate(id, { ...req.body.campground }) // three dots will returns a list of campground fields
+    const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground }) // three dots will returns a list of campground fields
     req.flash("success", "Successfully updated campground!")
     // redirect to the just edited object
     res.redirect(`/campgrounds/${campground._id}`)
 }));
 
 // camp DELETE route
-router.delete('/:id', catchAsync(async(req, res) =>{
+router.delete('/:id', isLoggedIn, isAuthor, catchAsync(async(req, res) =>{
     const { id } = req.params;
     await Campground.findByIdAndDelete(id);
     req.flash("success", "Campground deleted")

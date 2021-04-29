@@ -39,7 +39,7 @@ router.get('/login', (req, res) => {
 // Uses passport.authenticate middlewate with local strategy
 router.post('/login', passport.authenticate('local', {failureFlash: true, failureRedirect:'/login'}), (req, res)=> {
     req.flash('success', 'Welcome back!');
-    const redirectUrl = req.session.returnTo || '/campgroudns' // if the user was redirected to login when aceessing some URL, they will be redirected back there after logging in
+    const redirectUrl = req.session.returnTo || '/campgrounds' // if the user was redirected to login when aceessing some URL, they will be redirected back there after logging in
     delete req.session.returnTo; // remove the originalURL from session
     res.redirect(redirectUrl);
 });
