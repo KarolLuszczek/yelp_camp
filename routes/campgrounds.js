@@ -27,7 +27,13 @@ router.post('/', isLoggedIn, validateCampground, catchAsync(async (req, res, nex
 }));
 // campground SHOW route
 router.get('/:id', catchAsync(async(req, res) => {
-    const campground = await (await Campground.findById(req.params.id).populate('reviews').populate('author'))
+    // use path when populating to populate the review and the review author
+    const campground = await (await Campground.findById(req.params.id).populate({
+        path:'reviews',
+        populate: {
+            path: 'author'
+        }
+    }).populate('author'))
     // populate is used to populate reviews in campground with actual data
     // if campground not found flash error and redirect
     if(!campground){
