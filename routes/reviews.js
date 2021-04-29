@@ -12,6 +12,7 @@ const catchAsync = require('../utils/catchAsync');
 router.post('/', isLoggedIn, validateReview, catchAsync(async(req, res) =>{
     const campground = await Campground.findById(req.params.id);
     const review = new Review(req.body.review);
+    review.author = req.user._id; // user is on request thanks to passport
     campground.reviews.push(review);
     await review.save();
     await campground.save(); // should be done in parallel (awaiting)
