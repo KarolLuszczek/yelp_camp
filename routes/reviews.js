@@ -3,29 +3,13 @@ const express = require('express');
 // Use mergeParams to access all params on the route
 // we need it to get :id from the route (defined in app.js)
 const router = express.Router({mergeParams: true}); // router for adding routes
-const Campground = require('../models/campground');
-const Review = require('../models/review');
 const { isLoggedIn, validateReview, isReviewAuthor } = require('../middleware');
 const catchAsync = require('../utils/catchAsync');
- 
-// middleware valdiateReview before the reivew is added to the database
-router.post('/', isLoggedIn, validateReview, catchAsync(async(req, res) =>{
-    const campground = await Campground.findById(req.params.id);
-    const review = new Review(req.body.review);
-    review.author = req.user._id; // user is on request thanks to passport
-    campground.reviews.push(review);
-    await review.save();
-    await campground.save(); // should be done in parallel (awaiting)
-    req.flash("success", "New review added!")
-    res.redirect(`/campgrounds/${campground._id}`);
-}));
+const reviews = require('../controllers/reviews');
 
-router.delete('/:reviewId', isLoggedIn, isReviewAuthor, catchAsync(async (req, res) =>{
-    const {id, reviewId } = req.params; // destructuring request parameters
-    Campground.findByIdAndUpdate(id, {$pull: { reviews: reviewId}}) // $pull operator removes all instances that match reviewId from an array reviews
-    await Review.findByIdAndDelete(reviewId);
-    req.flash("success", "Deleted review!")
-    res.redirect(`/campgrounds/${id}`)
-}));
+// middleware valdiateReview before the reivew is added to the database
+router.post('/', isLoggedIn, validateReview, catchAsync(reviews.createReview));
+
+router.delete('/:reviewId', isLoggedIn, isReviewAuthor, catchAsync(reviews.destroyReview));
 
 module.exports = router;
