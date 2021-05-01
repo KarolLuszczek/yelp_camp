@@ -5,6 +5,11 @@ const ejsMate = require('ejs-mate');
 const session = require('express-session');
 const Joi = require('joi');
 const flash = require('connect-flash');
+if(process.env.NODE_ENV !== "prodcution") {
+    // look for key, value paris in the .env file
+    require('dotenv').config(); // if not in production add contents of .env to process.env
+};
+
 const ExpressError = require('./utils/ExpressError');
 const methodOverride = require('method-override');
 const passport = require('passport');

@@ -4,11 +4,17 @@ const Campground = require('../models/campground');
 const campgrounds = require('../controllers/campgrounds')
 const { isLoggedIn, isAuthor, validateCampground } = require('../middleware');
 const catchAsync = require('../utils/catchAsync');
-
+const multer = require('multer');
+const { storage } = require('../cloudinary'); // node automatically looks for a index.js in a folder
+const upload = multer({ storage });
 
 router.route('/')
     .get(catchAsync(campgrounds.index))
-    .post(isLoggedIn, validateCampground, catchAsync(campgrounds.createCampground))
+    .post(
+        isLoggedIn,
+        upload.array('image'),
+        validateCampground,
+        catchAsync(campgrounds.createCampground))
 
 // campground CREATE route\
 // this route must be declared before /campgroudns/:id
