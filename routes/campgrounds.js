@@ -27,7 +27,7 @@ router.route('/:id')
     .get(catchAsync(campgrounds.showCampground))
     // route handling the from request to edit the camp
     // middleware is passed before the main function on the path
-    .put( isLoggedIn, isAuthor, validateCampground, catchAsync(campgrounds.updateCampground))
+    .put( isLoggedIn, isAuthor, upload.array('image'), validateCampground, catchAsync(campgrounds.updateCampground))
     // camp DELETE route
     .delete(isLoggedIn, isAuthor, catchAsync(campgrounds.destroyCampground))
 

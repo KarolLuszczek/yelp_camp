@@ -54,6 +54,9 @@ module.exports.updateCampground = async(req,res) => {
     // use spread operator (...) to spread the campground object
     // into the db model object
     const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground }) // three dots will returns a list of campground fields
+    const imgs = req.files.map(f =>({ url: f.path, filename:f.filename })); // implicit return
+    campground.images.push(...imgs); // spread the array of new images to be pushed to the existing array
+    await campground.save();
     req.flash("success", "Successfully updated campground!")
     // redirect to the just edited object
     res.redirect(`/campgrounds/${campground._id}`)

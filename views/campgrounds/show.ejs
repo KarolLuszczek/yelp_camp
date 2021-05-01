@@ -2,10 +2,29 @@
 <link rel="stylesheet" href="/stylesheets/stars.css">
 <div class="row">
     <div class="col-6">
-        <div class="card mb-3">
-            <% for(let img of campground.images) { %>
-            <img src="<%= img.url %>" class="card-img-top" alt="...">    
+
+        <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+            <% campground.images.forEach((img, idx) => { %>
+                <!--- Add an active class only to the first image-->
+              <div class="carousel-item <%= idx === 0 ? 'active' : ''%>">
+                <img class="d-block w-100" src="<%= img.url %>" alt="">
+              </div>
+            <% }) %>
+            </div>
+            <!-- Show carousel controls only if there is more than one image -->
+            <% if(campground.images.length > 1) { %>
+            <a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </a>
+            <a class="carousel-control-next" href="#carouselExampleControls" role="button" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </a>
             <% } %>
+          </div>
+
+
+        <div class="card mb-3">
             <div class="card-body">
                 <h5 class="card-title"><%= campground.title%></h5>
                 <p class="card-text"><%= campground.description%></p>
