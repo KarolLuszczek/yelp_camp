@@ -3,17 +3,25 @@ const mongoose = require('mongoose');
 const Review = require('./review');
 const Schema = mongoose.Schema; // a little shortcut for schema object
 
+const ImageSchema = new Schema({
+    url: String,
+    filename: String  
+});
+
+// virtual property to call cloudinary transfomration api
+// we use virtuaal property so that it is not unnecessarily stored
+// in the database model
+ImageSchema.virtual('thumbnail').get(function() {
+    // insert width property to the images cloudinary url
+    return this.url.replace('/upload', '/upload/w_200');
+});
+
 const CampgroundSchema = new Schema({
     title: String,
     price: Number,
     description: String,
     location: String,
-    images: [
-       {
-           url: String,
-           filename: String
-        } 
-    ],
+    images: [ImageSchema], // images is a list of ImageSchemas
     author: {
         type: Schema.Types.ObjectId,
         ref: 'User'
