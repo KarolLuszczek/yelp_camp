@@ -1,4 +1,5 @@
 // Campground controllers for MVC pattern
+const { cloudinary } = require('../cloudinary');
 const Campground = require('../models/campground');
 
 module.exports.index = (async (req, res) => {
@@ -57,7 +58,17 @@ module.exports.updateCampground = async(req,res) => {
     const imgs = req.files.map(f =>({ url: f.path, filename:f.filename })); // implicit return
     campground.images.push(...imgs); // spread the array of new images to be pushed to the existing array
     await campground.save();
-    req.flash("success", "Successfully updated campground!")
+    // check if there are images to delete
+    if (req.body.deleteImages){
+        // remove from cloudinary
+        for(let filename of req.body.deleteImages){
+            cloudinary.uploader.destroy(filename);
+        }
+        // remove from images array of the campground
+        await campground.updateOne({$pull: {images: {filename: {$in: req.body.deleteImages}}}});
+        console.log(campground)
+    }
+        req.flash("success", "Successfully updated campground!")
     // redirect to the just edited object
     res.redirect(`/campgrounds/${campground._id}`)
 };

@@ -32,6 +32,19 @@
                     <textarea class="form-control" type="text" id='description' name="campground[description]" required><%= campground.description%></textarea>
                 </div>
                 <div class="mb-3">
+                    <% campground.images.forEach(function(img, idx) { %>
+                    <img src="<%= img.url %>" class="img-thumbnail" alt="">
+                    <div class="form-check-inline">
+                        <!-- the filenaame to be deleted from the db is stored as value in input
+                        deleteImages array is added to Joi schema
+                        Any checked box's value will be added to deleteImages[] array.. 
+                        Why does this work like this????-->
+                        <input type="checkbox" id="image-<%=idx%>" name="deleteImages[]" value="<%=img.filename%>">
+                    </div>
+                    <label for="image-<%=idx%>">Delete?</label>
+                    <% })%>
+                </div>
+                <div class="mb-3">
                     <button class="btn btn-success">Update Campground</button>
                  </div>
                 <div class="mb-3">
