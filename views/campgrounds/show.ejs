@@ -1,10 +1,6 @@
 <% layout('layouts/boilerplate')%>
 <link rel="stylesheet" href="/stylesheets/stars.css">
 
-<script>
-    const mapToken = '<%-process.env.MAPBOX_TOKEN%>';  // allows ejs to populate the mapToken variable that is then required in showPageMaps.js
-</script>
-
 <div class="row">
     <div class="col-6">
 
@@ -118,4 +114,8 @@
 </div>
 
 <!-- Mapbox script, pass the access token to the script -->
+<script>
+    const mapToken = '<%-process.env.MAPBOX_TOKEN%>';  // allows ejs to populate the mapToken variable that is then required in showPageMaps.js
+    const campground = <%- JSON.stringify(campground)%> // stringfy campground, avoids a crash on some illegal syntaxs
+</script>
 <script src="/javascripts/showPageMap.js"></script>
