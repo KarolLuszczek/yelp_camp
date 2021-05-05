@@ -29,6 +29,7 @@ const seedDB = async() => {
                 author: '60885ad52758a32f8ced05b8',
                 location: `${cities[random1000].city}, ${cities[random1000].state}`, // Using `` invokes template literal that contain placeholders ${expression}
                 title: `${sample(descriptors)} ${sample(places)}`,
+                geometry: { type: 'Point', coordinates: [ -80.3192, 40.752 ] },
                 images:[
                     {
                     url: 'https://res.cloudinary.com/dmcsvx9ib/image/upload/v1619885092/YelpCamp/lbeftssqjxwrb5uiraig.jpg',
