@@ -1,6 +1,9 @@
 // Campground controllers for MVC pattern
 const { cloudinary } = require('../cloudinary');
 const Campground = require('../models/campground');
+const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding"); // for mapbox geocoding sdk
+const mapBoxToken = process.env.MAPBOX_TOKEN;
+const geocoder = mbxGeocoding({ accessToken: mapBoxToken });
 
 module.exports.index = (async (req, res) => {
     const campgrounds = await Campground.find({}) // find all camps in the db
@@ -13,7 +16,12 @@ module.exports.renderNewForm = (req, res) => {
 
 module.exports.createCampground = async (req, res, next) => {
     // req.files available due to multer
+    const geoData = await geocoder.forwardGeocode({
+        query: req.body.campground.location,
+        limit: 1
+    }).send()
     const campground = new Campground(req.body.campground); // create a new db entry from the form post request
+    campground.geometry = geoData.body.features[0].geometry; // save GeoJSON data
     campground.images = req.files.map(f =>({ url: f.path, filename:f.filename })); // implicit return
     campground.author = req.user._id;
     console.log(req.user._id)
