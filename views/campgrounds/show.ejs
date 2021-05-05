@@ -1,7 +1,16 @@
 <% layout('layouts/boilerplate')%>
 <link rel="stylesheet" href="/stylesheets/stars.css">
+
+<script>
+    const mapToken = '<%-process.env.MAPBOX_TOKEN%>';  // allows ejs to populate the mapToken variable that is then required in showPageMaps.js
+</script>
+
 <div class="row">
     <div class="col-6">
+
+        <!--- Mapbox map -->
+        <div id='map' style='width: 400px; height: 300px;'></div>
+
 
         <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
@@ -107,3 +116,6 @@
         <%  } %>
     </div>
 </div>
+
+<!-- Mapbox script, pass the access token to the script -->
+<script src="/javascripts/showPageMap.js"></script>
