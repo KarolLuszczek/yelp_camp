@@ -16,6 +16,7 @@ ImageSchema.virtual('thumbnail').get(function() {
     return this.url.replace('/upload', '/upload/w_200');
 });
 
+const opts = { toJSON: { virtuals: true }}; // will add virtual when schema is jsonified
 const CampgroundSchema = new Schema({
     title: String,
     price: Number,
@@ -44,7 +45,14 @@ const CampgroundSchema = new Schema({
             ref: 'Review'
         }
     ]
+}, opts);
+
+// virtual porpery for mapbox popup
+CampgroundSchema.virtual('properties.popUpMarkup').get(function() {
+    // insert width property to the images cloudinary url
+    return `<a href="/campgrounds/${this._id}">${this.title}</a>`; // return string literal with an anchor tag
 });
+
 
 CampgroundSchema.post('findOneAndDelete', async function (doc) {
    // deleted documents by findOneAndDelete will be passed to the async function

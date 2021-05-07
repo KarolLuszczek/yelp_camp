@@ -21,7 +21,7 @@ const sample = (array) => array[Math.floor(Math.random() * array.length)];
 const seedDB = async() => {
     await Campground.deleteMany({}); // Remove all camps from db
     // Seed the database with 50 random camps and locations
-    for(let i=0; i<50; i++){
+    for(let i=0; i<200; i++){
         const random1000 =Math.floor(Math.random() * 1000); // JS trick forr generating random ints
         const price = Math.floor(Math.random()* 30) + 10;
         // Create a new random campground
@@ -29,7 +29,7 @@ const seedDB = async() => {
                 author: '60885ad52758a32f8ced05b8',
                 location: `${cities[random1000].city}, ${cities[random1000].state}`, // Using `` invokes template literal that contain placeholders ${expression}
                 title: `${sample(descriptors)} ${sample(places)}`,
-                geometry: { type: 'Point', coordinates: [ -80.3192, 40.752 ] },
+                geometry: { type: 'Point', coordinates: [ cities[random1000].longitude, cities[random1000].latitude ] },
                 images:[
                     {
                     url: 'https://res.cloudinary.com/dmcsvx9ib/image/upload/v1619885092/YelpCamp/lbeftssqjxwrb5uiraig.jpg',
