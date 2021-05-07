@@ -106,7 +106,7 @@ map.on('load', function () {
     // description HTML from its properties.
     map.on('click', 'unclustered-point', function (e) {
         var coordinates = e.features[0].geometry.coordinates.slice();
-        const text = e.features[0].properties.popUpMarkup;
+        const { popUpMarkup } = e.features[0].properties;
         // Ensure that if the map is zoomed out such that
         // multiple copies of the feature are visible, the
         // popup appears over the copy being pointed to.
@@ -116,9 +116,7 @@ map.on('load', function () {
 
         new mapboxgl.Popup()
             .setLngLat(coordinates)
-            .setHTML(
-                text
-            )
+            .setHTML(popUpMarkup)
             .addTo(map);
     });
 
