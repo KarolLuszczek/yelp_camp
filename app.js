@@ -3,7 +3,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
 const session = require('express-session');
-const Joi = require('joi');
+const mongoSanitize = require('express-mongo-sanitize');
 const flash = require('connect-flash');
 if(process.env.NODE_ENV !== "prodcution") {
     // look for key, value paris in the .env file
@@ -45,6 +45,9 @@ app.use(methodOverride('_method')); // to Override query methods in forms (to se
 
 // Tell express to serve public directory
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Use mongo sanitize to prevent mongo injections
+app.use(mongoSanitize());
 // Configure session
 const sessionConfig = {
     secret: 'thisisasecretlol!',
