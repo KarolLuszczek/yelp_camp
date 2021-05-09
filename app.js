@@ -5,7 +5,9 @@ const ejsMate = require('ejs-mate');
 const session = require('express-session');
 const mongoSanitize = require('express-mongo-sanitize');
 const flash = require('connect-flash');
-const helmet = require('helmet')
+const helmet = require('helmet');
+
+const MongoStore = require("connect-mongo"); // for storing session data on mongo
 
 if(process.env.NODE_ENV !== "prodcution") {
     // look for key, value paris in the .env file
@@ -22,8 +24,9 @@ const userRoutes = require('./routes/users');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
 
-const dbUrl = process.env.ATLAS_URL;
-mongoose.connect('mongodb://localhost:27017/yelp-camp', {
+const dbUrl = 'mongodb://localhost:27017/yelp-camp';
+//const dbUrl = process.env.ATLAS_URL;
+mongoose.connect(dbUrl, {
 //mongoose.connect(dbUrl, {
     useNewUrlParser: true,
     useCreateIndex: true,
@@ -100,9 +103,21 @@ app.use(
     })
 );
 
+// setyp mongo store with lazy updates
+// make changes in db after touchAfter seconds
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    secret: 'thisshouldbeanenvvariable',
+    touchAfter: 24*60*60
+});
+
+store.on("error", function(e) {
+    console.log("SESSION STORE ERROR", e)
+});
 
 // Configure session
 const sessionConfig = {
+    store,
     name: 'notdefualtname',
     secret: 'thisisasecretlol!',
     resave: false,
