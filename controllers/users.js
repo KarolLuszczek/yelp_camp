@@ -8,6 +8,7 @@ module.exports.registerUser = async(req, res, next) => {
     try {
     const {email, username, password} = req.body;
     const user = new User({email, username});
+    console.log("Registering user ..")
     const registeredUser = await User.register(user, password); //passport will take the password, hash it and store it with the salts 
     console.log(registeredUser);
     // login helper function is from passport and estalishes a logged in session
