@@ -171,6 +171,8 @@ app.use((err, req, res, next) => {
     res.status(err.statusCode).render('error', { err }); //sends a response with a statusCode and a message
 });
 
-app.listen(3000, ()=> {
-    console.log('serving on port 3000')
+const port = process.env.PORT || 3000; // 80 will be avaialble by defualy on heroku
+
+app.listen(port, ()=> {
+    console.log(`serving on port ${port}`)
 });
