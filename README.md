@@ -1,6 +1,9 @@
 # yelp_camp
 BootCamp project. Using express, mongoDB, ejs.
 
+Temporarily deployed on Heroku:
+https://vast-cliffs-66496.herokuapp.com/
+
 The App is using RESTful routes.
 
 
@@ -14,3 +17,5 @@ The App is using RESTful routes.
 
 To run app on heroku define the start script in package.json:
 `start: node app.js`
+
+Whitelist heroku on mongo ATLAS.
