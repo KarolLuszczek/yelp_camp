@@ -24,7 +24,7 @@ const userRoutes = require('./routes/users');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
 
-const dbUrl = 'mongodb://localhost:27017/yelp-camp';
+const dbUrl = process.env.ATLAS_URL || 'mongodb://localhost:27017/yelp-camp';
 //const dbUrl = process.env.ATLAS_URL;
 mongoose.connect(dbUrl, {
 //mongoose.connect(dbUrl, {
@@ -105,9 +105,11 @@ app.use(
 
 // setyp mongo store with lazy updates
 // make changes in db after touchAfter seconds
+const secret = process.env.SECRET || 'thisshouldbeanenvvariable'
+
 const store = MongoStore.create({
     mongoUrl: dbUrl,
-    secret: 'thisshouldbeanenvvariable',
+    secret: secret,
     touchAfter: 24*60*60
 });
 
@@ -119,7 +121,7 @@ store.on("error", function(e) {
 const sessionConfig = {
     store,
     name: 'notdefualtname',
-    secret: 'thisisasecretlol!',
+    secret: secret,
     resave: false,
     saveUninitialized: true,
     cookie: {
